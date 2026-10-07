@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assessment Detective — Misi 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12141a;
+  --bg-2:#191c24;
+  --paper:#ece2c8;
+  --paper-2:#ddcfa8;
+  --ink:#26211a;
+  --ink-soft:#5a4f3d;
+  --red:#a5382c;
+  --red-dark:#7c281f;
+  --brass:#c99a4a;
+  --brass-soft:#8a6e3c;
+  --teal:#4a7a72;
+  --text:#eae4d3;
+  --text-dim:#9a927d;
+  --panel:#1e222b;
+  --panel-2:#252a35;
+  --line: rgba(234,228,211,0.12);
+  --shadow: 0 18px 40px rgba(0,0,0,0.45);
+  --radius: 3px;
+}
+*{box-sizing:border-box;}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(201,154,74,0.05), transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(74,122,114,0.06), transparent 45%),
+    var(--bg);
+  color:var(--text);
+  font-family:'IBM Plex Sans', sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+button{font-family:inherit; cursor:pointer;}
+button:focus-visible, [tabindex]:focus-visible, .chip:focus-visible{
+  outline:2px solid var(--brass);
+  outline-offset:2px;
+}
+.screen{
+  display:none;
+  min-height:100vh;
+  width:100%;
+  padding:32px 20px 60px;
+  align-items:flex-start;
+  justify-content:center;
+}
+.screen.active{display:flex; animation:fadeIn .5s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+
+.eyebrow{
+  font-family:'Courier Prime', monospace;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  font-size:12px;
+  color:var(--brass);
+}
+
+/* ---------- SPLASH ---------- */
+#splash .wrap{max-width:720px; text-align:center; margin:auto; padding-top:8vh;}
+h1.title{
+  font-family:'Special Elite', monospace;
+  font-size:clamp(34px,6vw,58px);
+  letter-spacing:.03em;
+  margin:0 0 8px;
+  color:var(--text);
+  text-shadow:0 2px 0 rgba(0,0,0,0.4);
+}
+.subtitle{
+  font-family:'Courier Prime', monospace;
+  color:var(--text-dim);
+  font-size:15px;
+  margin:0 0 40px;
+}
+.folder-stack{
+  position:relative; width:min(420px,80vw); height:120px; margin:0 auto 44px;
+}
+.detective-stamp{
+  position:absolute; top:-30px; right:calc(50% - 190px);
+  width:96px; height:96px;
+  border:3px solid var(--red);
+  border-radius:50%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transform:rotate(-13deg);
+  color:var(--red);
+  font-family:'Special Elite', monospace;
+  font-size:9.5px;
+  letter-spacing:.05em;
+  line-height:1.35;
+  text-align:center;
+  opacity:.85;
+  background:radial-gradient(circle, rgba(165,56,44,0.05), transparent 70%);
+  z-index:5;
+  pointer-events:none;
+}
+.detective-stamp .emoji{font-size:22px; margin-bottom:2px;}
+@media (max-width:480px){
+  .detective-stamp{right:2px; top:-26px; width:78px; height:78px; font-size:8px;}
+  .detective-stamp .emoji{font-size:18px;}
+}
+.folder-slot{
+  position:absolute; left:50%; width:100%;
+  transition:transform .35s cubic-bezier(.25,.8,.4,1);
+}
+.folder-slot.f1{top:24px; z-index:1; transform:translateX(-50%) rotate(-6deg);}
+.folder-slot.f2{top:10px; z-index:2; transform:translateX(-50%) rotate(3deg);}
+.folder-slot.f3{top:0;  z-index:3; transform:translateX(-50%) rotate(-1deg);}
+.folder-stack.peek .folder-slot.f1{transform:translateX(-50%) rotate(-11deg);}
+.folder-stack.peek .folder-slot.f2{transform:translateX(-50%) rotate(8deg);}
+.folder-stack.peek .folder-slot.f3{transform:translateX(-50%) rotate(4deg);}
+.folder-bob{
+  position:relative;
+  width:100%; height:88px;
+  background:var(--paper);
+  border-radius:2px 10px 4px 4px;
+  box-shadow:var(--shadow);
+  animation:folderBob 3.4s ease-in-out infinite;
+}
+.folder-slot.f1 .folder-bob{animation-delay:.15s; animation-duration:3.1s;}
+.folder-slot.f2 .folder-bob{animation-delay:.55s; animation-duration:3.6s;}
+.folder-slot.f3 .folder-bob{animation-delay:0s; animation-duration:3.3s;}
+@keyframes folderBob{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-4px);}
+}
+.folder-bob .tab{
+  position:absolute; top:-14px; left:24px;
+  width:90px; height:18px;
+  background:var(--paper);
+  border-radius:4px 4px 0 0;
+}
+.rahasia-tag{
+  position:absolute; right:16px; bottom:14px;
+  font-family:'Special Elite',monospace;
+  color:var(--red);
+  font-size:12px; letter-spacing:.1em;
+  border:2px solid var(--red);
+  padding:2px 8px;
+  transform:rotate(-8deg);
+  opacity:.75;
+}
+.btn{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-weight:600;
+  font-size:15px;
+  padding:14px 30px;
+  border-radius:2px;
+  border:1px solid var(--brass);
+  background:transparent;
+  color:var(--text);
+  letter-spacing:.02em;
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  transition:background .18s ease, color .18s ease, transform .18s ease;
+}
+.btn:hover{background:var(--brass); color:#1a1508; transform:translateY(-1px);}
+.btn.primary{background:var(--brass); color:#1a1508;}
+.btn.primary:hover{background:#dcae5c;}
+.btn.ghost{border-color:var(--line); }
+.btn.ghost:hover{background:var(--panel-2); color:var(--text);}
+.btn:disabled{opacity:.35; cursor:not-allowed; transform:none;}
+.btn:disabled:hover{background:transparent; color:var(--text);}
+.btn.primary:disabled:hover{background:var(--brass); color:#1a1508;}
+
+.dev-credit{
+  margin-top:54px;
+  padding-top:18px;
+  border-top:1px solid var(--line);
+  font-family:'Courier Prime', monospace;
+  font-size:11.5px;
+  color:var(--text-dim);
+  line-height:1.7;
+}
+.dev-credit b{color:var(--text-dim); font-weight:600;}
+
+/* ---------- LOGIN PESERTA ---------- */
+#login .wrap{max-width:460px; text-align:center; margin:auto; padding-top:8vh;}
+.login-card{
+  background:var(--paper); color:var(--ink); border-radius:6px; box-shadow:var(--shadow);
+  padding:32px 28px; text-align:left; position:relative; margin-top:26px;
+}
+.login-card .stamp{
+  position:absolute; top:22px; right:24px;
+  border:2px solid var(--red); color:var(--red);
+  font-family:'Special Elite',monospace; font-size:11px; letter-spacing:.08em;
+  padding:4px 9px; transform:rotate(8deg); opacity:.8;
+}
+.login-card h2{font-family:'Special Elite',monospace; font-size:19px; margin:0 0 6px;}
+.login-card .hint-line{font-family:'Courier Prime',monospace; font-size:12.5px; color:var(--ink-soft); margin:0 0 22px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-family:'Courier Prime',monospace; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px;}
+.field input{
+  width:100%; padding:11px 12px; font-family:'IBM Plex Sans',sans-serif; font-size:14.5px;
+  border:1.5px solid var(--ink-soft); border-radius:3px; background:#f6efdd; color:var(--ink);
+}
+.field input:focus-visible{outline:2px solid var(--red); outline-offset:1px;}
+.login-actions{text-align:center; margin-top:24px;}
+
+/* ---------- PRINT (SERTIFIKAT) ---------- */
+@media print{
+  body *{visibility:hidden;}
+  #report, #report *{visibility:visible;}
+  #report{position:absolute; left:0; top:0; width:100%; padding:0; background:#fff;}
+  .footer-actions, #hint-btn, .brief-actions{display:none !important;}
+}
+
+/* ---------- BRIEFING ---------- */
+#briefing .wrap{max-width:640px; margin:6vh auto 0;}
+.case-file-doc{
+  background:var(--paper);
+  color:var(--ink);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:36px 34px;
+  font-family:'Courier Prime', monospace;
+  position:relative;
+  transform:rotate(-0.4deg);
+}
+.case-file-doc .stamp{
+  position:absolute; top:26px; right:30px;
+  border:3px solid var(--red);
+  color:var(--red);
+  font-family:'Special Elite',monospace;
+  padding:5px 12px;
+  transform:rotate(9deg);
+  font-size:13px;
+  letter-spacing:.08em;
+  opacity:.8;
+}
+.case-file-doc h2{
+  font-family:'Special Elite',monospace;
+  font-size:22px;
+  margin:0 0 18px;
+  border-bottom:2px solid var(--ink);
+  padding-bottom:10px;
+}
+.case-file-doc p{line-height:1.75; font-size:14.5px; margin:0 0 14px;}
+.brief-actions{text-align:center; margin-top:34px;}
+
+/* ---------- CASE PLAY LAYOUT ---------- */
+#case-play{align-items:flex-start;}
+.case-shell{width:100%; max-width:1180px; margin:0 auto;}
+.case-topbar{
+  display:flex; flex-wrap:wrap; gap:14px;
+  align-items:center; justify-content:space-between;
+  margin-bottom:18px;
+}
+.case-heading h2{
+  font-family:'Special Elite', monospace;
+  font-size:22px; margin:0 0 4px;
+}
+.case-heading .eyebrow{margin-bottom:4px; display:block;}
+.hud{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+.hud .pill{
+  font-family:'Courier Prime', monospace;
+  font-size:12.5px;
+  border:1px solid var(--line);
+  padding:6px 12px;
+  border-radius:20px;
+  color:var(--text-dim);
+  display:flex; align-items:center; gap:6px;
+}
+.hud .pill b{color:var(--text); font-weight:600;}
+.timer-bar-wrap{width:120px; height:7px; background:var(--panel-2); border-radius:4px; overflow:hidden; border:1px solid var(--line);}
+.timer-bar{height:100%; width:100%; background:var(--teal); transition:width 1s linear, background .3s;}
+.timer-bar.low{background:var(--red);}
+
+.split{
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  gap:22px;
+  align-items:start;
+}
+@media (max-width:860px){.split{grid-template-columns:1fr;}}
+
+.doc-panel{
+  background:var(--paper);
+  color:var(--ink);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:0;
+  overflow:hidden;
+  position:relative;
+}
+.doc-panel .doc-head{
+  font-family:'Courier Prime', monospace;
+  font-size:12px;
+  letter-spacing:.1em;
+  background:var(--paper-2);
+  padding:10px 20px;
+  border-bottom:1px dashed var(--ink-soft);
+  color:var(--ink-soft);
+}
+.doc-body{padding:22px 24px 28px;}
+.doc-section{
+  padding:14px 14px;
+  margin:0 -14px 4px;
+  border-radius:3px;
+  border:1px dashed transparent;
+  transition:background .15s, border-color .15s;
+}
+.doc-section.clickable{cursor:pointer;}
+.doc-section.clickable:hover{background:rgba(165,56,44,0.07); border-color:rgba(165,56,44,0.35);}
+.doc-section .lbl{
+  font-family:'Special Elite', monospace;
+  font-size:13px;
+  color:var(--ink-soft);
+  margin-bottom:4px;
+  display:block;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.doc-section p{font-family:'Courier Prime', monospace; font-size:14px; line-height:1.65; margin:0; color:var(--ink);}
+.doc-section.reviewed p{
+  background-image:linear-gradient(104deg, rgba(255,241,118,0) 0%, rgba(255,241,118,0) 2%, rgba(255,235,80,.65) 5%, rgba(255,235,80,.65) 94%, rgba(255,241,118,0) 97%, rgba(255,241,118,0) 100%);
+  background-repeat:no-repeat;
+  padding:2px 1px;
+  transition:background .25s ease;
+}
+.doc-section.flagged{background:rgba(165,56,44,0.14); border-color:var(--red);}
+.doc-section.flagged::after{
+  content:"🔎 DITANDAI";
+  float:right;
+  font-family:'Special Elite', monospace;
+  font-size:11px;
+  color:var(--red);
+}
+hr.tear{border:none; border-top:1px dashed var(--ink-soft); margin:2px 0 12px; opacity:.6;}
+
+.rubric-table{display:flex; gap:10px; margin:6px 0 20px;}
+.rubric-col{flex:1; border:1px solid var(--ink-soft); border-radius:3px; overflow:hidden; background:rgba(255,255,255,0.25);}
+.rubric-head{
+  background:var(--paper-2); font-family:'Special Elite',monospace; font-size:12.5px;
+  text-align:center; padding:7px 4px; border-bottom:1px dashed var(--ink-soft); color:var(--ink);
+}
+.rubric-blank{
+  font-family:'Courier Prime',monospace; font-size:11.5px; color:var(--ink-soft);
+  text-align:center; padding:20px 6px; line-height:1.9; letter-spacing:1px;
+}
+.assessor-note{
+  background:#f2e3a0; border:1px solid #c9ae54; border-radius:2px;
+  padding:15px 17px 14px; margin:16px 2px 4px; position:relative;
+  transform:rotate(-1deg); box-shadow:0 6px 14px rgba(0,0,0,0.18);
+}
+.assessor-note::before{content:"📌"; position:absolute; top:-13px; left:16px; font-size:19px;}
+.note-title{
+  display:block; font-family:'Special Elite',monospace; font-size:11.5px;
+  letter-spacing:.08em; color:#6b5713; margin-bottom:7px;
+}
+.assessor-note p{font-family:'Courier Prime',monospace; font-size:12.5px; line-height:1.65; color:#4a3d10; margin:0;}
+
+.notebook{
+  background:var(--panel);
+  border-radius:var(--radius);
+  border:1px solid var(--line);
+  padding:20px;
+  position:sticky; top:20px;
+}
+.notebook h3{
+  font-family:'Special Elite', monospace;
+  font-size:15px;
+  margin:0 0 14px;
+  display:flex; align-items:center; gap:8px;
+  color:var(--brass);
+}
+.checklist{list-style:none; margin:0 0 18px; padding:0; display:flex; flex-direction:column; gap:8px;}
+.checklist li{
+  font-size:13.5px; color:var(--text-dim);
+  display:flex; align-items:center; gap:9px;
+  padding:7px 10px; border-radius:3px; border:1px solid var(--line);
+}
+.checklist li .box{width:15px; height:15px; border:1.5px solid var(--text-dim); border-radius:3px; flex:none;}
+.checklist li.done{color:var(--text); border-color:var(--teal); background:rgba(74,122,114,0.12);}
+.checklist li.done .box{background:var(--teal); border-color:var(--teal); position:relative;}
+.checklist li.done .box::after{content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; color:#0d1712;}
+
+.task-instr{
+  font-size:13.5px; line-height:1.6; color:var(--text-dim); margin-bottom:16px;
+  border-left:2px solid var(--brass); padding-left:12px;
+}
+
+.interaction-area{display:flex; flex-direction:column; gap:10px;}
+
+.chip{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:13.5px;
+  padding:10px 14px;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  border-radius:3px;
+  color:var(--text);
+  text-align:left;
+  transition:border-color .15s, background .15s, transform .1s;
+}
+.chip:hover{border-color:var(--brass);}
+.chip.selected{border-color:var(--brass); background:rgba(201,154,74,0.14); transform:translateX(3px);}
+.chip.locked{opacity:.4; cursor:default;}
+.chip.wrong-flash{animation:shake .35s;}
+@keyframes shake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);}}
+
+.dropzones{display:flex; flex-direction:column; gap:10px;}
+.dropzone{
+  border:1.5px dashed var(--line);
+  border-radius:3px;
+  padding:10px 12px;
+  min-height:44px;
+  font-size:13px;
+  color:var(--text-dim);
+  transition:border-color .15s, background .15s;
+}
+.dropzone .zlabel{font-family:'Courier Prime',monospace; font-size:11.5px; letter-spacing:.06em; color:var(--brass); display:block; margin-bottom:6px; text-transform:uppercase;}
+.dropzone.target-active{border-color:var(--brass); background:rgba(201,154,74,0.08);}
+.dropzone .placed{
+  background:var(--panel-2); border:1px solid var(--teal); border-radius:3px;
+  padding:8px 10px; font-size:13px; color:var(--text); margin-top:4px;
+  cursor:pointer; transition:border-color .15s, background .15s;
+}
+.dropzone .placed:hover{border-color:var(--red); background:rgba(165,56,44,0.12);}
+
+.pair-row{display:flex; gap:8px; align-items:center;}
+.pair-row .lots-hots-btns{display:flex; gap:6px;}
+.mini-btn{
+  font-size:11.5px; padding:6px 10px; border-radius:12px;
+  border:1px solid var(--line); background:transparent; color:var(--text-dim);
+}
+.mini-btn.on-lots{border-color:#a9754a; color:#c99b74;}
+.mini-btn.on-lots.chosen{background:#8a5a35; color:#fff3e2; border-color:#8a5a35;}
+.mini-btn.on-hots{border-color:#3f8f5f; color:#7cc79b;}
+.mini-btn.on-hots.chosen{background:#2f7a4d; color:#eafff1; border-color:#2f7a4d;}
+@keyframes miniPop{0%{transform:scale(1);}45%{transform:scale(1.22);}100%{transform:scale(1);}}
+.mini-btn.pop{animation:miniPop .26s ease;}
+
+.checkbox-row{
+  display:flex; gap:10px; align-items:flex-start;
+  padding:9px 10px; border:1px solid var(--line); border-radius:3px; font-size:13px;
+}
+.checkbox-row input{margin-top:3px;}
+
+.footer-actions{display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:10px; flex-wrap:wrap;}
+.hint-box{
+  font-size:12.5px; color:var(--brass); border:1px dashed var(--brass); border-radius:3px;
+  padding:9px 11px; margin-top:12px; display:none; line-height:1.5;
+}
+.hint-box.show{display:block;}
+.feedback{
+  margin-top:14px; font-size:13px; padding:10px 12px; border-radius:3px; display:none; line-height:1.55;
+}
+.feedback.show{display:block;}
+.feedback.ok{background:rgba(74,122,114,0.16); border:1px solid var(--teal); color:var(--text);}
+.feedback.bad{background:rgba(165,56,44,0.14); border:1px solid var(--red); color:var(--text);}
+
+/* ---------- CASE SOLVED ---------- */
+#case-solved .wrap{max-width:520px; text-align:center; margin:10vh auto 0;}
+.stamp-solved{
+  font-family:'Special Elite', monospace;
+  font-size:clamp(30px,7vw,50px);
+  color:var(--red);
+  border:5px solid var(--red);
+  padding:12px 30px;
+  display:inline-block;
+  letter-spacing:.05em;
+  opacity:0;
+  animation:stampDrop .65s cubic-bezier(.22,.95,.32,1) forwards;
+}
+@keyframes stampDrop{
+  0%{ transform:translateY(-170px) rotate(-20deg) scale(.55); opacity:0; }
+  55%{ transform:translateY(8px) rotate(-3deg) scale(1.1); opacity:1; }
+  72%{ transform:translateY(-6px) rotate(-8deg) scale(.96); opacity:1; }
+  86%{ transform:translateY(2px) rotate(-5deg) scale(1.02); opacity:1; }
+  100%{ transform:translateY(0) rotate(-6deg) scale(1); opacity:1; }
+}
+@keyframes impactShake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-7px);}
+  40%{transform:translateX(6px);}
+  60%{transform:translateX(-4px);}
+  80%{transform:translateX(2px);}
+}
+#case-solved .wrap.impact-shake{animation:impactShake .3s ease;}
+.evidence-get{
+  margin:32px auto 0; max-width:280px;
+  background:var(--panel); border:1px solid var(--brass); border-radius:4px;
+  padding:18px; display:flex; align-items:center; gap:14px; text-align:left;
+}
+.evidence-get .icon{font-size:30px;}
+.evidence-get .lbl{font-size:11px; letter-spacing:.1em; color:var(--text-dim); text-transform:uppercase;}
+.evidence-get .name{font-family:'Special Elite',monospace; font-size:17px; color:var(--brass);}
+.score-line{margin-top:20px; font-family:'Courier Prime',monospace; color:var(--text-dim); font-size:14px;}
+
+/* ---------- EVIDENCE BOARD (persistent mini) ---------- */
+.evidence-board{
+  display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;
+}
+.ev-tag{
+  font-size:11px; padding:5px 9px; border-radius:12px; border:1px solid var(--line); color:var(--text-dim);
+  font-family:'Courier Prime',monospace;
+}
+.ev-tag.got{border-color:var(--teal); color:var(--text); background:rgba(74,122,114,0.14);}
+
+/* ---------- MISSION COMPLETE ---------- */
+#mission-complete .wrap{max-width:640px; text-align:center; margin:8vh auto 0;}
+.corkboard{
+  background:#2a2320;
+  border:10px solid #3b2f27;
+  border-radius:4px;
+  padding:30px 20px;
+  display:flex; flex-wrap:wrap; gap:18px; justify-content:center;
+  margin:30px 0;
+  box-shadow:inset 0 0 40px rgba(0,0,0,0.5);
+}
+.pin-card{
+  background:var(--paper); color:var(--ink); width:120px; padding:14px 10px 10px;
+  border-radius:2px; box-shadow:0 8px 14px rgba(0,0,0,0.4);
+  text-align:center; position:relative; transform:rotate(var(--r,0deg));
+  font-family:'Courier Prime', monospace;
+}
+.pin-card::before{
+  content:""; position:absolute; top:-7px; left:50%; transform:translateX(-50%);
+  width:10px;height:10px;border-radius:50%; background:var(--red); box-shadow:0 1px 3px rgba(0,0,0,0.6);
+}
+.pin-card .icon{font-size:26px; margin-bottom:6px;}
+.pin-card .name{font-size:11.5px; font-weight:700;}
+
+/* ---------- REFLECTION ---------- */
+#reflection .wrap{max-width:680px; margin:0 auto;}
+.refl-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:12px;}
+.refl-timer{
+  font-family:'Special Elite',monospace; font-size:26px; color:var(--brass);
+  border:1px solid var(--brass); padding:8px 18px; border-radius:4px;
+}
+.refl-q{margin-bottom:20px;}
+.refl-q label{display:block; font-size:14px; margin-bottom:8px; color:var(--text);}
+.refl-q textarea{
+  width:100%; min-height:80px; background:var(--panel); border:1px solid var(--line); color:var(--text);
+  border-radius:4px; padding:12px; font-family:inherit; font-size:13.5px; resize:vertical;
+}
+.refl-q textarea:focus-visible{outline:2px solid var(--brass);}
+
+/* ---------- MISSION REPORT ---------- */
+#report .wrap{max-width:480px; margin:6vh auto 0;}
+.report-card{
+  background:var(--paper); color:var(--ink); border-radius:6px; box-shadow:var(--shadow);
+  padding:34px 30px; text-align:center; position:relative;
+}
+.report-card h2{font-family:'Special Elite', monospace; font-size:22px; margin:0 0 22px; letter-spacing:.06em;}
+.report-badge{
+  width:88px;height:88px;border-radius:50%; margin:0 auto 16px;
+  border:3px solid var(--red); display:flex;align-items:center;justify-content:center; font-size:34px;
+  background:radial-gradient(circle, rgba(165,56,44,0.08), transparent 70%);
+}
+.report-row{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px dashed var(--ink-soft); font-family:'Courier Prime',monospace; font-size:14px;}
+.report-row:last-of-type{border-bottom:none;}
+.report-row b{font-size:16px;}
+.badge-name{font-family:'Special Elite',monospace; color:var(--red); letter-spacing:.05em; margin-top:6px; font-size:15px;}
+
+/* ---------- TRANSITION ---------- */
+#transition .wrap{max-width:560px; text-align:center; margin:14vh auto 0;}
+#transition p{font-size:16px; line-height:1.7; color:var(--text);}
+#transition .q{font-family:'Special Elite',monospace; font-size:19px; color:var(--brass); margin-top:20px;}
+
+.visually-hidden{position:absolute; width:1px;height:1px; overflow:hidden; clip:rect(0 0 0 0);}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN PESERTA ============ -->
+<section class="screen active" id="login">
+  <div class="wrap">
+    <span class="eyebrow">Misi 3 · Workshop Asesmen</span>
+    <h1 class="title" style="font-size:clamp(26px,5vw,38px);">ASSESSMENT DETECTIVE</h1>
+    <div class="login-card">
+      <div class="stamp">REGISTRASI</div>
+      <h2>Formulir Pendaftaran Detektif</h2>
+      <p class="hint-line">Isi identitas Anda — nama dan sekolah akan tercantum pada sertifikat di akhir misi.</p>
+      <div class="field">
+        <label for="p-name">Nama Lengkap</label>
+        <input type="text" id="p-name" placeholder="mis. Budi Santoso, S.Pd." oninput="checkLoginReady()" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="p-school">Asal Sekolah / Instansi</label>
+        <input type="text" id="p-school" placeholder="mis. SMA Negeri 1 Sendawar" oninput="checkLoginReady()" autocomplete="organization">
+      </div>
+    </div>
+    <div class="login-actions">
+      <button class="btn primary" id="login-btn" onclick="submitLogin()" disabled>Masuk sebagai Detektif →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SPLASH ============ -->
+<section class="screen" id="splash">
+  <div class="wrap">
+    <span class="eyebrow">Misi 3 · Workshop Asesmen</span>
+    <h1 class="title">ASSESSMENT DETECTIVE</h1>
+    <p class="subtitle" id="splash-greet">// tim investigasi asesmen kelas //</p>
+
+    <div class="folder-stack" id="folder-stack">
+      <div class="detective-stamp">
+        <span class="emoji">🕵️</span>
+        <span>OFFICIAL<br>INVESTIGATION</span>
+      </div>
+      <div class="folder-slot f1"><div class="folder-bob"><div class="tab"></div></div></div>
+      <div class="folder-slot f2"><div class="folder-bob"><div class="tab"></div></div></div>
+      <div class="folder-slot f3"><div class="folder-bob"><div class="tab"></div><span class="rahasia-tag">RAHASIA</span></div></div>
+    </div>
+
+    <button class="btn primary" id="open-case-btn" onclick="openBriefingWithEffect()" onmouseenter="foldersPeek(true)" onmouseleave="foldersPeek(false)">
+      <span aria-hidden="true">📂</span> Buka Berkas Kasus
+    </button>
+
+    <div class="dev-credit">
+      <b>Dikembangkan oleh:</b> Desi Susanti, S.Pd., M.Pd.<br>
+      <b>Unit Kerja:</b> SMA Negeri 1 Sendawar<br>
+      <b>Kontak:</b> 0813-4726-8828
+    </div>
+  </div>
+</section>
+
+<!-- ============ BRIEFING ============ -->
+<section class="screen" id="briefing">
+  <div class="wrap">
+    <div class="case-file-doc">
+      <div class="stamp">CONFIDENTIAL</div>
+      <h2>CASE BRIEFING</h2>
+      <p>Laporan diterima.</p>
+      <p>Dalam audit akademik ditemukan lima dokumen asesmen milik guru dari berbagai jenjang. Namun tim audit menduga terdapat kejanggalan pada seluruh dokumen tersebut.</p>
+      <p>Sebagai tim <strong>Assessment Detective</strong>, tugas Anda adalah memeriksa tiap berkas, menemukan bukti kejanggalannya, dan mengumpulkan seluruh bukti sebelum asesmen tersebut benar-benar digunakan di kelas.</p>
+      <p>Lima berkas. Lima kejanggalan berbeda. Waktu terus berjalan.</p>
+    </div>
+    <div class="brief-actions">
+      <button class="btn primary" onclick="startCase(0)">Terima Kasus →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CASE PLAY ============ -->
+<section class="screen" id="case-play">
+  <div class="case-shell">
+    <div class="case-topbar">
+      <div class="case-heading">
+        <span class="eyebrow" id="case-eyebrow">Kasus 1 / 5</span>
+        <h2 id="case-title">—</h2>
+      </div>
+      <div class="hud">
+        <div class="pill">⭐ <b id="hud-score">0</b> poin</div>
+        <div class="pill">⏱ <span class="timer-bar-wrap"><span class="timer-bar" id="timer-bar"></span></span></div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="doc-panel">
+        <div class="doc-head" id="doc-head">📄 DOKUMEN KASUS</div>
+        <div class="doc-body" id="doc-body"><!-- injected --></div>
+      </div>
+
+      <div class="notebook">
+        <h3>📓 NOTEBOOK DETEKTIF</h3>
+        <ul class="checklist" id="checklist"><!-- injected --></ul>
+        <div class="task-instr" id="task-instr"></div>
+        <div class="interaction-area" id="interaction-area"><!-- injected --></div>
+        <div class="hint-box" id="hint-box"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="footer-actions">
+          <button class="btn ghost" id="hint-btn" onclick="useHint()">💡 Minta Petunjuk (−20)</button>
+          <button class="btn primary" id="submit-btn" onclick="submitCase()" disabled>Ajukan Temuan</button>
+        </div>
+        <div class="evidence-board" id="mini-evidence"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CASE SOLVED ============ -->
+<section class="screen" id="case-solved">
+  <div class="wrap">
+    <div class="stamp-solved">CASE SOLVED</div>
+    <div class="evidence-get">
+      <div class="icon" id="solved-icon">🧩</div>
+      <div>
+        <div class="lbl">Bukti diperoleh</div>
+        <div class="name" id="solved-evidence-name">—</div>
+      </div>
+    </div>
+    <p class="score-line" id="solved-explain"></p>
+    <p class="score-line" id="solved-score"></p>
+    <div class="brief-actions" style="margin-top:10px;">
+      <button class="btn primary" id="next-case-btn" onclick="nextCase()">Kasus Berikutnya →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MISSION COMPLETE ============ -->
+<section class="screen" id="mission-complete">
+  <div class="wrap">
+    <span class="eyebrow">Seluruh berkas telah diperiksa</span>
+    <h1 class="title" style="font-size:clamp(28px,5vw,42px);">MISSION COMPLETE</h1>
+    <p class="subtitle">Papan bukti tim Anda kini lengkap.</p>
+    <div class="corkboard" id="corkboard"><!-- injected --></div>
+    <button class="btn primary" onclick="goTo('reflection'); startReflectionTimer();">Lanjut ke Refleksi Tim →</button>
+  </div>
+</section>
+
+<!-- ============ REFLECTION ============ -->
+<section class="screen" id="reflection">
+  <div class="wrap">
+    <div class="refl-top">
+      <div>
+        <span class="eyebrow">Refleksi Tim</span>
+        <h2 style="font-family:'Special Elite',monospace; margin:6px 0 0;">Debrief Investigasi</h2>
+      </div>
+      <div>
+        <div class="refl-timer" id="refl-timer">05:00</div>
+        <button class="btn ghost" style="margin-top:8px; width:100%;" id="pause-btn" onclick="togglePause()">⏸ Jeda</button>
+      </div>
+    </div>
+
+    <div class="refl-q">
+      <label for="q1">1. Kasus mana yang paling sulit bagi tim Anda? Mengapa?</label>
+      <textarea id="q1" placeholder="Tuliskan jawaban tim di sini..."></textarea>
+    </div>
+    <div class="refl-q">
+      <label for="q2">2. Temuan apa yang paling mengejutkan dari kelima kasus?</label>
+      <textarea id="q2" placeholder="Tuliskan jawaban tim di sini..."></textarea>
+    </div>
+    <div class="refl-q">
+      <label for="q3">3. Apa yang akan Anda periksa sebelum menggunakan asesmen buatan Anda sendiri?</label>
+      <textarea id="q3" placeholder="Tuliskan jawaban tim di sini..."></textarea>
+    </div>
+
+    <div class="brief-actions">
+      <button class="btn primary" onclick="finishReflection()">Selesaikan Refleksi →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MISSION REPORT ============ -->
+<section class="screen" id="report">
+  <div class="wrap">
+    <div class="report-card">
+      <span class="eyebrow" style="color:var(--red);">Laporan Resmi</span>
+      <h2>MISSION REPORT</h2>
+      <div class="report-badge">🏅</div>
+      <div class="badge-name">ASSESSMENT DETECTIVE</div>
+      <div style="margin-top:18px; text-align:left;">
+        <div class="report-row"><span>Nama Detektif</span><b id="rep-name">—</b></div>
+        <div class="report-row"><span>Asal Sekolah</span><b id="rep-school">—</b></div>
+        <div class="report-row"><span>Kasus diselesaikan</span><b id="rep-cases">5/5</b></div>
+        <div class="report-row"><span>Skor akhir</span><b id="rep-score">0 / 500</b></div>
+        <div class="report-row"><span>Petunjuk digunakan</span><b id="rep-hints">0</b></div>
+        <div class="report-row"><span>Waktu pengerjaan</span><b id="rep-time">00:00</b></div>
+      </div>
+    </div>
+    <div class="brief-actions">
+      <button class="btn ghost" onclick="window.print()">🖨️ Cetak Sertifikat</button>
+      <button class="btn primary" onclick="goTo('transition')">Selesai</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRANSITION ============ -->
+<section class="screen" id="transition">
+  <div class="wrap">
+    <span class="eyebrow">Penutup Misi 3</span>
+    <p style="margin-top:18px;">Selamat, permainan Anda berhasil menemukan berbagai kelemahan asesmen.</p>
+    <p class="q">Pertanyaannya sekarang:<br>bagaimana merancang asesmen yang benar sejak awal?</p>
+  </div>
+</section>
+
+<script>
+/* =========================================================
+   DATA — 5 KASUS
+   ========================================================= */
+const CASES = [
+[
+  // CASE 1
+  {
+    key:'validitas',
+    title:'Kasus 1 — Kesesuaian Tujuan dan Instrumen',
+    docHead:'📄 RPP & INSTRUMEN — BU RANI, KELAS 8',
+    time:60,
+    checklist:['Tujuan','Aktivitas','Asesmen','Rubrik'],
+    instr:'Klik bagian dokumen di sebelah kiri yang menurut Anda TIDAK selaras dengan bagian lainnya.',
+    type:'click-suspect',
+    sections:[
+      {id:'tujuan', lbl:'Tujuan Pembelajaran', text:'Murid mampu membuat poster ajakan pelestarian lingkungan yang komunikatif dan kreatif.'},
+      {id:'aktivitas', lbl:'Aktivitas', text:'Siswa bekerja dalam kelompok merancang poster kampanye lingkungan menggunakan bahan daur ulang.'},
+      {id:'asesmen', lbl:'Instrumen Asesmen', text:'Jelaskan pengertian energi terbarukan dan sebutkan tiga contohnya.'},
+      {id:'rubrik', lbl:'Rubrik Penilaian', text:'Kreativitas (25) • Pesan Kampanye (25) • Kerapian (25) • Kerja Sama (25)'}
+    ],
+    correct:'asesmen',
+    hint:'Bandingkan kata kerja pada Tujuan ("membuat poster") dengan bentuk soal pada Asesmen. Apakah esai bisa mengukur kemampuan membuat poster?',
+    explain:'Instrumen berbentuk esai teori tidak dapat mengukur kemampuan "membuat poster". Ini pelanggaran validitas — asesmen tidak selaras dengan tujuan pembelajaran.',
+    evidence:{icon:'🛡️', name:'Validitas'}
+  },
+  // CASE 2
+  {
+    key:'hots',
+    title:'Kasus 2 — LOTS vs HOTS',
+    docHead:'📄 BANK SOAL — PAK DEDI, KELAS 10 (TEMA: PEMANASAN GLOBAL)',
+    time:100,
+    checklist:['Tujuan','Klasifikasi Soal','Soal Bermasalah'],
+    instr:'Tujuan pembelajaran menuntut kemampuan HOTS. Klasifikasikan tiap soal sebagai LOTS atau HOTS, lalu tandai soal yang tidak sesuai dengan tujuan.',
+    type:'classify',
+    tujuanText:'Tujuan Pembelajaran: Menganalisis penyebab utama pemanasan global dan dampaknya terhadap ekosistem.',
+    cards:[
+      {id:'c1', text:'Sebutkan tiga penyebab pemanasan global.', answer:'LOTS'},
+      {id:'c2', text:'Bandingkan dua kebijakan iklim yang berbeda dan simpulkan mana yang lebih efektif serta mengapa.', answer:'HOTS'},
+      {id:'c3', text:'Jelaskan definisi efek rumah kaca.', answer:'LOTS'},
+      {id:'c4', text:'Rancang solusi untuk mengurangi emisi karbon di sekolahmu dan justifikasi pilihanmu.', answer:'HOTS'}
+    ],
+    correct:'c1',
+    hint:'Soal mana yang hanya meminta siswa "menyebutkan", padahal tujuan meminta "menganalisis"?',
+    explain:'Soal "Sebutkan tiga penyebab..." hanya mengukur ingatan (LOTS - C1), padahal tujuan pembelajaran menuntut kemampuan menganalisis (HOTS - C4). Soal utama ujian tidak mengukur level kognitif yang dituju.',
+    evidence:{icon:'🧩', name:'HOTS'}
+  },
+  // CASE 3
+  {
+    key:'rubrik',
+    title:'Kasus 3 — Rubrik',
+    docHead:'📄 RUBRIK PROYEK — BU SARI, PRESENTASI KELOMPOK',
+    time:120,
+    checklist:['Kriteria', 'Level Baik', 'Level Cukup', 'Level Kurang'],
+    instr:'Rubrik ini hanya berisi label "Baik / Cukup / Kurang" tanpa deskriptor. Klik salah satu deskriptor, lalu klik kotak level yang sesuai untuk menempatkannya. Salah tempat? Klik langsung deskriptor yang sudah terpasang — ia akan otomatis terpilih ulang, tinggal klik kotak yang benar.',
+    type:'dragdrop-rubric',
+    criterion:'Kriteria: Kualitas Argumen dalam Presentasi',
+    levels:[
+      {id:'baik', label:'Baik'},
+      {id:'cukup', label:'Cukup'},
+      {id:'kurang', label:'Kurang'}
+    ],
+    chips:[
+      {id:'d1', text:'Argumen didukung ≥3 data valid dan disampaikan secara runtut', target:'baik'},
+      {id:'d2', text:'Argumen didukung 1–2 data, penyampaian cukup runtut', target:'cukup'},
+      {id:'d3', text:'Argumen tanpa data pendukung dan penyampaian tidak runtut', target:'kurang'},
+      {id:'d4', text:'Siswa hadir tepat waktu saat presentasi', target:null},
+      {id:'d5', text:'Slide presentasi didesain dengan warna menarik', target:null}
+    ],
+    hint:'Dua deskriptor sengaja tidak berhubungan dengan kualitas argumen sama sekali — sisihkan dulu deskriptor semacam itu.',
+    explain:'Rubrik awal hanya berisi label tanpa deskriptor perilaku yang jelas — rubrik seperti ini belum operasional dan rawan dinilai subjektif oleh penilai berbeda.',
+    evidence:{icon:'📏', name:'Rubrik'}
+  },
+  // CASE 4
+  {
+    key:'formatif',
+    title:'Kasus 4 — Asesmen Sepanjang Pembelajaran',
+    docHead:'📄 ARSIP ASESMEN — PAK JOKO, SATU SEMESTER',
+    time:110,
+    checklist:['Sebelum','Selama','Sesudah'],
+    instr:'Pak Joko hanya menyerahkan satu lembar nilai. Klik salah satu jenis asesmen, lalu klik tahap yang sesuai: sebelum, selama, atau sesudah pembelajaran. Salah tempat? Klik langsung keping yang sudah terpasang — ia akan otomatis terpilih ulang, tinggal klik tahap yang benar.',
+    type:'dragdrop-stage',
+    stages:[
+      {id:'sebelum', label:'Sebelum Pembelajaran'},
+      {id:'selama', label:'Selama Pembelajaran'},
+      {id:'sesudah', label:'Sesudah Pembelajaran'}
+    ],
+    chips:[
+      {id:'s1', text:'Tes Diagnostik Awal', target:'sebelum'},
+      {id:'s2', text:'Kuis Interaktif di Tengah Jam Pelajaran', target:'selama'},
+      {id:'s3', text:'Exit Ticket Akhir Sesi', target:'selama'},
+      {id:'s4', text:'Observasi Diskusi Kelompok', target:'selama'},
+      {id:'s5', text:'Ujian Akhir Semester', target:'sesudah'}
+    ],
+    hint:'Sekarang lihat kembali arsip Pak Joko — dari lima jenis ini, tahap mana yang sama sekali kosong dalam arsipnya?',
+    explain:'Setelah dipetakan, terlihat arsip Pak Joko hanya berisi tes akhir (sesudah) dan tidak pernah mencatat asesmen "selama pembelajaran" — belum ada asesmen formatif yang terdokumentasi.',
+    evidence:{icon:'📊', name:'Formatif'}
+  },
+  // CASE 5
+  {
+    key:'ai',
+    title:'Kasus 5 — Validasi AI',
+    docHead:'📄 5 SOAL BUATAN AI — BU WULAN, TEMA FOTOSINTESIS',
+    time:90,
+    checklist:['Soal 1','Soal 2','Soal 3','Soal 4','Soal 5'],
+    instr:'Bu Wulan langsung mencetak soal buatan AI tanpa memeriksanya. Centang soal-soal yang PERLU DIREVISI sebelum dipakai.',
+    type:'checklist-review',
+    items:[
+      {id:'i1', text:'Jelaskan mengapa fotosintesis itu penting bagi mahluk hidup?', needsRevision:true, why:'Cakupan pertanyaan terlalu luas dan tidak ada batasan jawaban yang jelas.'},
+      {id:'i2', text:'Sebutkan tiga bahan yang dibutuhkan tumbuhan untuk melakukan fotosintesis.', needsRevision:false, why:'Instruksi jelas dan jawabannya spesifik (sinar matahari, air, karbon dioksida) sehingga dapat dinilai secara objektif — sesuai untuk mengukur pemahaman dasar (level LOTS yang dituju).'},
+      {id:'i3', text:'Bagaimana perubahan iklim memengaruhi laju fotosintesis di hutan hujan? Analisis dengan data yang kamu ketahui.', needsRevision:true, why:'Meminta "data yang kamu ketahui" padahal siswa tidak pernah diberi data — soal tidak adil dan sulit dijawab.'},
+      {id:'i4', text:'Gambarkan diagram proses fotosintesis beserta keterangannya.', needsRevision:false, why:'Instruksi jelas dan dapat dinilai secara objektif.'},
+      {id:'i5', text:'Fotosintesis adalah proses membuat makanan sendiri oleh tumbuhan menggunakan sinar matahari, air, dan karbon dioksida.', needsRevision:true, why:'Ini bukan soal — hanya pernyataan definisi tanpa perintah kerja bagi siswa.'}
+    ],
+    hint:'Baca ulang tiap kalimat: apakah itu benar-benar berbentuk perintah/pertanyaan yang bisa dijawab dan dinilai secara adil?',
+    explain:'AI dapat menghasilkan soal dengan cepat, tetapi tetap perlu divalidasi manusia: cakupan yang jelas, keadilan bagi siswa, dan bentuk soal yang benar-benar bisa dinilai.',
+    evidence:{icon:'🤖', name:'AI Validation'}
+  }
+]][0];
+
+/* =========================================================
+   STATE
+   ========================================================= */
+let state = {
+  idx:0,
+  score:0,
+  evidence:[],
+  hintsUsedTotal:0,
+  hintUsedThisCase:false,
+  submitted:false,
+  timerId:null,
+  timeLeft:90,
+  timeTotal:90,
+  startedAt:null,
+  participant:{name:'', school:''},
+  // interaction working state
+  work:{}
+};
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* =========================================================
+   EFEK SPLASH: folder peek on hover + suara buka map
+   ========================================================= */
+function foldersPeek(on){
+  const stack = document.getElementById('folder-stack');
+  if(stack) stack.classList.toggle('peek', on);
+}
+
+function playFolderSound(){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    const ctx = new AC();
+    const dur = 0.28;
+    const bufferSize = Math.floor(ctx.sampleRate * dur);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){
+      const decay = 1 - (i/bufferSize);
+      data[i] = (Math.random()*2-1) * decay * decay;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1500, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(500, ctx.currentTime+dur);
+    filter.Q.value = 0.8;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.32, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+dur);
+    noise.connect(filter).connect(gain).connect(ctx.destination);
+    noise.start();
+    noise.stop(ctx.currentTime+dur);
+  }catch(e){ /* audio tidak tersedia, abaikan */ }
+}
+
+function openBriefingWithEffect(){
+  const btn = document.getElementById('open-case-btn');
+  const stack = document.getElementById('folder-stack');
+  if(btn.disabled) return;
+  btn.disabled = true;
+  playFolderSound();
+  if(stack) stack.classList.add('peek');
+  setTimeout(()=>{
+    goTo('briefing');
+    btn.disabled = false;
+    if(stack) stack.classList.remove('peek');
+  }, 950);
+}
+
+/* =========================================================
+   LOGIN PESERTA
+   ========================================================= */
+function checkLoginReady(){
+  const name = document.getElementById('p-name').value.trim();
+  const school = document.getElementById('p-school').value.trim();
+  document.getElementById('login-btn').disabled = !(name && school);
+}
+function submitLogin(){
+  const name = document.getElementById('p-name').value.trim();
+  const school = document.getElementById('p-school').value.trim();
+  if(!name || !school) return;
+  state.participant.name = name;
+  state.participant.school = school;
+  document.getElementById('splash-greet').textContent = `// selamat datang, Detektif ${name} //`;
+  goTo('splash');
+}
+
+/* =========================================================
+   CASE FLOW
+   ========================================================= */
+function startCase(i){
+  if(!state.startedAt) state.startedAt = Date.now();
+  state.idx = i;
+  state.hintUsedThisCase = false;
+  state.submitted = false;
+  state.work = {};
+  clearInterval(state.timerId);
+  const c = CASES[i];
+  state.timeTotal = c.time || 90;
+  state.timeLeft = state.timeTotal;
+  document.getElementById('case-eyebrow').textContent = `Kasus ${i+1} / 5`;
+  document.getElementById('case-title').textContent = c.title;
+  document.getElementById('doc-head').textContent = c.docHead;
+  document.getElementById('hud-score').textContent = state.score;
+  document.getElementById('hint-box').classList.remove('show');
+  document.getElementById('hint-box').textContent = '';
+  document.getElementById('feedback').classList.remove('show','ok','bad');
+  document.getElementById('hint-btn').disabled = false;
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('task-instr').textContent = c.instr;
+
+  updateChecklist(c);
+  renderMiniEvidence();
+  renderDoc(c);
+  renderInteraction(c);
+
+  goTo('case-play');
+  startTimer();
+}
+
+function renderChecklist(items, doneIdxs){
+  const ul = document.getElementById('checklist');
+  ul.innerHTML = items.map((t,i)=>`<li class="${doneIdxs.includes(i)?'done':''}"><span class="box"></span>${t}</li>`).join('');
+}
+
+function computeDoneIdxs(c){
+  if(c.type==='click-suspect'){
+    const reviewed = state.work.reviewed || [];
+    return c.sections.map((s,i)=> reviewed.includes(s.id) ? i : -1).filter(i=>i>=0);
+  }
+  if(c.type==='classify'){
+    const idxs=[0];
+    if(state.work.classified && Object.keys(state.work.classified).length === c.cards.length) idxs.push(1);
+    if(state.work.mismatch !== undefined) idxs.push(2);
+    return idxs;
+  }
+  if(c.type==='dragdrop-rubric'){
+    const idxs=[0];
+    c.levels.forEach((lvl,i)=>{
+      const filled = c.chips.some(ch=> ch.target===lvl.id && state.work.placed && state.work.placed[ch.id]===lvl.id);
+      if(filled) idxs.push(i+1);
+    });
+    return idxs;
+  }
+  if(c.type==='dragdrop-stage'){
+    const idxs=[];
+    c.stages.forEach((st,i)=>{
+      const filled = c.chips.some(ch=> state.work.placed && state.work.placed[ch.id]===st.id);
+      if(filled) idxs.push(i);
+    });
+    return idxs;
+  }
+  if(c.type==='checklist-review'){
+    const idxs=[];
+    c.items.forEach((it,i)=>{ if(state.work.checked && state.work.checked[it.id]===true) idxs.push(i); });
+    return idxs;
+  }
+  return [];
+}
+
+function updateChecklist(c){
+  renderChecklist(c.checklist, computeDoneIdxs(c));
+}
+
+function renderMiniEvidence(){
+  const wrap = document.getElementById('mini-evidence');
+  wrap.innerHTML = CASES.map(c=>{
+    const got = state.evidence.find(e=>e.key===c.key);
+    return `<span class="ev-tag ${got?'got':''}">${got?c.evidence.icon+' ':''}${c.evidence.name}</span>`;
+  }).join('');
+}
+
+function startTimer(){
+  const bar = document.getElementById('timer-bar');
+  bar.style.width='100%'; bar.classList.remove('low');
+  state.timerId = setInterval(()=>{
+    state.timeLeft--;
+    const pct = Math.max(0,(state.timeLeft/state.timeTotal)*100);
+    bar.style.width = pct+'%';
+    if(pct<25) bar.classList.add('low');
+    if(state.timeLeft<=0){
+      clearInterval(state.timerId);
+      state.score = Math.max(0, state.score-10);
+      document.getElementById('hud-score').textContent = state.score;
+      showFeedback('⏰ Waktu habis! −10 poin. Anda tetap bisa menyelesaikan temuan.', 'bad');
+    }
+  },1000);
+}
+
+function showFeedback(msg, kind){
+  const el = document.getElementById('feedback');
+  el.textContent = msg;
+  el.className = 'feedback show '+kind;
+}
+
+/* ---------- render dokumen kiri ---------- */
+function renderDoc(c){
+  const body = document.getElementById('doc-body');
+  if(c.type==='click-suspect'){
+    body.innerHTML = c.sections.map(s=>`
+      <div class="doc-section clickable" data-id="${s.id}" onclick="clickSuspect('${s.id}')">
+        <span class="lbl">${s.lbl}</span><p>${s.text}</p>
+      </div><hr class="tear">`).join('');
+  } else if(c.type==='classify'){
+    body.innerHTML = `<div class="doc-section"><span class="lbl">Tujuan Pembelajaran</span><p>${c.tujuanText.replace('Tujuan Pembelajaran: ','')}</p></div><hr class="tear">
+      <p style="font-family:'Courier Prime',monospace; font-size:13px; color:var(--ink-soft);">Klasifikasikan tiap soal di panel kanan, lalu tentukan soal mana yang tidak selaras dengan tujuan di atas.</p>`;
+  } else if(c.type==='dragdrop-rubric'){
+    body.innerHTML = `
+      <div class="doc-section"><span class="lbl">${c.criterion}</span><p>Berikut rubrik yang diserahkan Bu Sari untuk penilaian presentasi kelompok.</p></div>
+      <div class="rubric-table">
+        ${c.levels.map(lv=>`<div class="rubric-col"><div class="rubric-head">${lv.label}</div><div class="rubric-blank">…………………<br>…………………</div></div>`).join('')}
+      </div>
+      <div class="assessor-note">
+        <span class="note-title">📌 CATATAN PENILAI</span>
+        <p>Guru sudah menyusun tiga tingkat pencapaian, namun hanya berupa label — belum ada deskripsi perilaku yang membedakan satu level dari level lainnya. Tanpa deskriptor, dua penilai bisa memberi nilai berbeda untuk hasil kerja siswa yang sama.</p>
+      </div>`;
+  } else if(c.type==='dragdrop-stage'){
+    body.innerHTML = `<div class="doc-section"><span class="lbl">Arsip yang diserahkan</span><p>Pak Joko hanya menyerahkan satu lembar: rekap Ujian Akhir Semester. Petakan lima jenis asesmen di panel kanan ke tahap yang benar, lalu periksa tahap mana yang kosong di arsip aslinya.</p></div>`;
+  } else if(c.type==='checklist-review'){
+    body.innerHTML = c.items.map((it,n)=>`
+      <div class="doc-section"><span class="lbl">Soal ${n+1}</span><p>${it.text}</p></div><hr class="tear">`).join('');
+  }
+}
+
+/* ---------- render interaksi kanan ---------- */
+function renderInteraction(c){
+  const area = document.getElementById('interaction-area');
+  if(c.type==='click-suspect'){
+    area.innerHTML = `<p style="font-size:12.5px;color:var(--text-dim);">Klik bagian dokumen di sebelah kiri yang mencurigakan. Pilihan Anda akan tersorot di sana.</p>`;
+  }
+  else if(c.type==='classify'){
+    state.work.classified = {};
+    area.innerHTML = c.cards.map(card=>`
+      <div class="chip" style="display:flex;flex-direction:column;gap:8px;" data-cid="${card.id}">
+        <div>${card.text}</div>
+        <div class="lots-hots-btns">
+          <button class="mini-btn on-lots" onclick="classifyCard('${card.id}','LOTS')">LOTS</button>
+          <button class="mini-btn on-hots" onclick="classifyCard('${card.id}','HOTS')">HOTS</button>
+        </div>
+      </div>
+    `).join('');
+    area.insertAdjacentHTML('beforeend', `<div class="dropzone" style="margin-top:6px;"><span class="zlabel">Soal paling tidak sesuai tujuan</span>
+      <div id="mismatch-picker" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div>`);
+  }
+  else if(c.type==='dragdrop-rubric' || c.type==='dragdrop-stage'){
+    state.work.placed = {};
+    const zones = c.type==='dragdrop-rubric' ? c.levels : c.stages;
+    const chipsHtml = c.chips.map(ch=>`<button class="chip" id="chip-${ch.id}" onclick="selectChip('${ch.id}')">${ch.text}</button>`).join('');
+    const zonesHtml = zones.map(z=>`
+      <div class="dropzone" id="zone-${z.id}" onclick="placeInZone('${z.id}')">
+        <span class="zlabel">${z.label}</span>
+        <div id="zone-content-${z.id}"></div>
+      </div>`).join('');
+    area.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">${chipsHtml}</div>
+      <div class="dropzones">${zonesHtml}</div>
+      <p id="selected-hint" style="font-size:11.5px;color:var(--text-dim);margin-top:8px;">Klik satu keping di atas, lalu klik kotak tujuan untuk menempatkannya. Salah tempat? Klik langsung keping yang sudah terpasang — otomatis terpilih ulang, tinggal klik kotak yang benar.</p>`;
+  }
+  else if(c.type==='checklist-review'){
+    state.work.checked = {};
+    area.innerHTML = c.items.map((it,n)=>`
+      <label class="checkbox-row"><input type="checkbox" onchange="toggleCheck('${it.id}', this.checked)"> <span>Soal ${n+1} perlu direvisi</span></label>
+    `).join('');
+  }
+  updateSubmitState(c);
+}
+
+/* ---- interaction handlers ---- */
+function clickSuspect(id){
+  const c = CASES[state.idx];
+  if(!state.work.reviewed) state.work.reviewed = [];
+  if(!state.work.reviewed.includes(id)) state.work.reviewed.push(id);
+  document.querySelectorAll('.doc-section').forEach(d=>{
+    d.classList.remove('flagged');
+    if(state.work.reviewed.includes(d.dataset.id)) d.classList.add('reviewed');
+  });
+  document.querySelector(`.doc-section[data-id="${id}"]`).classList.add('flagged');
+  state.work.chosen = id;
+  updateSubmitState(c);
+  updateChecklist(c);
+}
+
+function classifyCard(cid, val){
+  state.work.classified[cid] = val;
+  document.querySelectorAll(`.chip[data-cid="${cid}"] .mini-btn`).forEach(b=>b.classList.remove('chosen','pop'));
+  const target = val==='LOTS' ? '.on-lots' : '.on-hots';
+  const btn = document.querySelector(`.chip[data-cid="${cid}"] ${target}`);
+  btn.classList.add('chosen','pop');
+  setTimeout(()=>btn.classList.remove('pop'), 260);
+  const c = CASES[state.idx];
+  // once all classified, populate mismatch picker
+  if(Object.keys(state.work.classified).length === c.cards.length){
+    const picker = document.getElementById('mismatch-picker');
+    picker.innerHTML = c.cards.map(card=>`<button class="mini-btn" onclick="pickMismatch('${card.id}')" id="mm-${card.id}">${card.id.toUpperCase()}</button>`).join('');
+  }
+  updateSubmitState(c);
+  updateChecklist(c);
+}
+function pickMismatch(cid){
+  document.querySelectorAll('#mismatch-picker .mini-btn').forEach(b=>b.classList.remove('chosen','on-hots','pop'));
+  const btn = document.getElementById('mm-'+cid);
+  btn.classList.add('chosen','on-hots','pop');
+  setTimeout(()=>btn.classList.remove('pop'), 260);
+  state.work.mismatch = cid;
+  const c = CASES[state.idx];
+  updateSubmitState(c);
+  updateChecklist(c);
+}
+
+let selectedChip = null;
+function selectChip(id){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+  const el = document.getElementById('chip-'+id);
+  if(el.classList.contains('locked')) return;
+  selectedChip = id;
+  el.classList.add('selected');
+}
+function placeInZone(zoneId){
+  if(!selectedChip) return;
+  const c = CASES[state.idx];
+  const chipData = c.chips.find(ch=>ch.id===selectedChip);
+  state.work.placed[selectedChip] = zoneId;
+  const chipEl = document.getElementById('chip-'+selectedChip);
+  chipEl.classList.add('locked');
+  chipEl.classList.remove('selected');
+  chipEl.disabled = true;
+  document.getElementById('zone-content-'+zoneId).insertAdjacentHTML('beforeend', `<div class="placed" data-chip="${selectedChip}" onclick="removeFromZone(event,'${selectedChip}')" title="Klik untuk ambil kembali">${chipData.text} <span style="opacity:.55;">✕</span></div>`);
+  selectedChip = null;
+  updateSubmitState(c);
+  updateChecklist(c);
+}
+function removeFromZone(evt, chipId){
+  evt.stopPropagation();
+  const c = CASES[state.idx];
+  delete state.work.placed[chipId];
+  const chipEl = document.getElementById('chip-'+chipId);
+  chipEl.classList.remove('locked');
+  chipEl.disabled = false;
+  const placedEl = document.querySelector(`.placed[data-chip="${chipId}"]`);
+  if(placedEl) placedEl.remove();
+  // langsung "pegang ulang" keping ini — siap ditempatkan tanpa langkah tambahan
+  document.querySelectorAll('.chip').forEach(ch=>ch.classList.remove('selected'));
+  selectedChip = chipId;
+  chipEl.classList.add('selected');
+  if(chipEl.scrollIntoView) chipEl.scrollIntoView({block:'nearest', behavior:'smooth'});
+  updateSubmitState(c);
+  updateChecklist(c);
+}
+function toggleCheck(id, val){
+  state.work.checked[id] = val;
+  const c = CASES[state.idx];
+  updateSubmitState(c);
+  updateChecklist(c);
+}
+
+function updateSubmitState(c){
+  let ready = false;
+  if(c.type==='click-suspect') ready = !!state.work.chosen;
+  else if(c.type==='classify') ready = state.work.mismatch !== undefined;
+  else if(c.type==='dragdrop-rubric') ready = c.chips.filter(ch=>ch.target).every(ch=>state.work.placed && state.work.placed[ch.id]) && Object.keys(state.work.placed||{}).length>=3;
+  else if(c.type==='dragdrop-stage') ready = c.chips.every(ch=>state.work.placed && state.work.placed[ch.id]);
+  else if(c.type==='checklist-review') ready = Object.keys(state.work.checked||{}).length>0;
+  document.getElementById('submit-btn').disabled = !ready;
+}
+
+/* =========================================================
+   HINT
+   ========================================================= */
+function useHint(){
+  const c = CASES[state.idx];
+  if(state.hintUsedThisCase) return;
+  state.hintUsedThisCase = true;
+  state.hintsUsedTotal++;
+  state.score = Math.max(0, state.score-20);
+  document.getElementById('hud-score').textContent = state.score;
+  const box = document.getElementById('hint-box');
+  box.textContent = '💡 '+c.hint;
+  box.classList.add('show');
+  document.getElementById('hint-btn').disabled = true;
+}
+
+/* =========================================================
+   SUBMIT / EVALUATE
+   ========================================================= */
+function submitCase(){
+  if(state.submitted) return;
+  const c = CASES[state.idx];
+  let correct = false;
+
+  if(c.type==='click-suspect'){
+    correct = state.work.chosen === c.correct;
+  }
+  else if(c.type==='classify'){
+    correct = state.work.mismatch === c.correct;
+  }
+  else if(c.type==='dragdrop-rubric'){
+    correct = c.chips.filter(ch=>ch.target).every(ch=> state.work.placed[ch.id]===ch.target)
+              && c.chips.filter(ch=>!ch.target).every(ch=> !state.work.placed[ch.id]);
+  }
+  else if(c.type==='dragdrop-stage'){
+    correct = c.chips.every(ch=> state.work.placed[ch.id]===ch.target);
+  }
+  else if(c.type==='checklist-review'){
+    const need = c.items.filter(i=>i.needsRevision).map(i=>i.id);
+    const got = Object.keys(state.work.checked).filter(k=>state.work.checked[k]);
+    correct = need.length===got.length && need.every(id=>got.includes(id));
+  }
+
+  clearInterval(state.timerId);
+  state.submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('hint-btn').disabled = true;
+
+  if(correct){
+    showFeedback('✅ Temuan Anda benar. Bukti berhasil diamankan.', 'ok');
+    state.score += 100;
+    state.evidence.push({key:c.key, ...c.evidence});
+    setTimeout(()=>showSolved(c), 900);
+  } else {
+    showFeedback('❌ Belum tepat. Coba tinjau ulang dokumen — gunakan petunjuk bila perlu.', 'bad');
+    state.submitted = false;
+    document.getElementById('submit-btn').disabled = false;
+    if(!state.hintUsedThisCase) document.getElementById('hint-btn').disabled = false;
+  }
+  document.getElementById('hud-score').textContent = state.score;
+}
+
+function showSolved(c){
+  document.getElementById('solved-icon').textContent = c.evidence.icon;
+  document.getElementById('solved-evidence-name').textContent = c.evidence.name;
+  document.getElementById('solved-explain').textContent = c.explain;
+  document.getElementById('solved-score').textContent = `Skor saat ini: ${state.score} poin`;
+  document.getElementById('next-case-btn').textContent = (state.idx < CASES.length-1) ? 'Kasus Berikutnya →' : 'Lihat Papan Bukti →';
+  goTo('case-solved');
+  setTimeout(()=>{
+    playThudSound();
+    const wrap = document.querySelector('#case-solved .wrap');
+    if(wrap){
+      wrap.classList.add('impact-shake');
+      setTimeout(()=>wrap.classList.remove('impact-shake'), 320);
+    }
+  }, 360);
+}
+
+function playThudSound(){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    const ctx = new AC();
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(170, t);
+    osc.frequency.exponentialRampToValueAtTime(48, t+0.22);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.55, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t+0.32);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(t); osc.stop(t+0.34);
+
+    const bufferSize = Math.floor(ctx.sampleRate*0.035);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1) * (1-i/bufferSize); }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.45, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t+0.05);
+    noise.connect(ng).connect(ctx.destination);
+    noise.start(t);
+  }catch(e){ /* audio tidak tersedia, abaikan */ }
+}
+
+function nextCase(){
+  if(state.idx < CASES.length-1){
+    startCase(state.idx+1);
+  } else {
+    renderCorkboard();
+    goTo('mission-complete');
+  }
+}
+
+function renderCorkboard(){
+  const board = document.getElementById('corkboard');
+  const rot = [-6,4,-3,7,-8];
+  board.innerHTML = state.evidence.map((e,i)=>`
+    <div class="pin-card" style="--r:${rot[i%rot.length]}deg;">
+      <div class="icon">${e.icon}</div>
+      <div class="name">${e.name}</div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   REFLECTION
+   ========================================================= */
+let reflSeconds = 300;
+let reflTimerId = null;
+let reflPaused = false;
+function startReflectionTimer(){
+  reflSeconds = 300; reflPaused = false;
+  updateReflDisplay();
+  clearInterval(reflTimerId);
+  reflTimerId = setInterval(()=>{
+    if(reflPaused) return;
+    reflSeconds--;
+    if(reflSeconds<=0){ reflSeconds=0; clearInterval(reflTimerId); }
+    updateReflDisplay();
+  },1000);
+}
+function updateReflDisplay(){
+  const m = String(Math.floor(reflSeconds/60)).padStart(2,'0');
+  const s = String(reflSeconds%60).padStart(2,'0');
+  document.getElementById('refl-timer').textContent = `${m}:${s}`;
+}
+function togglePause(){
+  reflPaused = !reflPaused;
+  document.getElementById('pause-btn').textContent = reflPaused ? '▶ Lanjutkan' : '⏸ Jeda';
+}
+function finishReflection(){
+  clearInterval(reflTimerId);
+  renderReport();
+  goTo('report');
+}
+
+/* =========================================================
+   REPORT
+   ========================================================= */
+function renderReport(){
+  document.getElementById('rep-name').textContent = state.participant.name || '—';
+  document.getElementById('rep-school').textContent = state.participant.school || '—';
+  document.getElementById('rep-cases').textContent = `${state.evidence.length}/5`;
+  document.getElementById('rep-score').textContent = `${state.score} / 500`;
+  document.getElementById('rep-hints').textContent = state.hintsUsedTotal;
+  const elapsed = state.startedAt ? Math.floor((Date.now()-state.startedAt)/1000) : 0;
+  const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+  const s = String(elapsed%60).padStart(2,'0');
+  document.getElementById('rep-time').textContent = `${m}:${s}`;
+}
+</script>
+</body>
+</html>
